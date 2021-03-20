@@ -1,18 +1,18 @@
 import React from "react";
-import { useTheme, fade, makeStyles } from "@material-ui/core/styles";
+import { fade, makeStyles } from "@material-ui/core/styles";
 import Popper from "@material-ui/core/Popper";
-import SettingsIcon from "@material-ui/icons/Settings";
-import CloseIcon from "@material-ui/icons/Close";
-import DoneIcon from "@material-ui/icons/Done";
+import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
+import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import Autocomplete, {
   AutocompleteCloseReason,
 } from "@material-ui/lab/Autocomplete";
 import ButtonBase from "@material-ui/core/ButtonBase";
 import InputBase from "@material-ui/core/InputBase";
+import { IconButton } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: 221,
+    width: 400,
     fontSize: 13,
   },
   button: {
@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
       width: 16,
       height: 16,
     },
+    borderBottom: 1,
   },
   tag: {
     marginTop: 3,
@@ -55,6 +56,9 @@ const useStyles = makeStyles((theme) => ({
     borderBottom: "1px solid #e1e4e8",
     padding: "8px 10px",
     fontWeight: 600,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   inputBase: {
     padding: 10,
@@ -117,25 +121,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-type Label = {
+type Store = {
   name: string;
-  color: string;
-  description: string;
+  type: string;
 };
+
+type Business = {
+  name: string;
+  stores: Store[];
+};
+
+type PickerMode = "store" | "business";
 
 export default function StorePicker() {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState<
     (EventTarget & HTMLButtonElement) | null
   >(null);
-  const [value, setValue] = React.useState<Label[]>([labels[1], labels[11]]);
-  const [pendingValue, setPendingValue] = React.useState<Label[]>([]);
-  const theme = useTheme();
+
+  const [pickerMode, setPickerMode] = React.useState<PickerMode>("store");
+
+  const [business, setBusiness] = React.useState<Business>(businesses[0]);
+  const [store, setStore] = React.useState<Store | null>(business.stores[0]);
 
   const handleClick = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    setPendingValue(value);
     setAnchorEl(event.currentTarget);
   };
 
@@ -146,15 +157,21 @@ export default function StorePicker() {
     if (reason === "toggleInput") {
       return;
     }
-    setValue(pendingValue);
     if (anchorEl) {
       anchorEl.focus();
     }
-    setAnchorEl(null);
+  };
+
+  const handleBusinessPickerMode = () => {
+    setPickerMode("business");
+  };
+
+  const handleStorePickerMode = () => {
+    setPickerMode("store");
   };
 
   const open = Boolean(anchorEl);
-  const id = open ? "github-label" : undefined;
+  const id = open ? "store-picker" : undefined;
 
   return (
     <React.Fragment>
@@ -165,21 +182,9 @@ export default function StorePicker() {
           aria-describedby={id}
           onClick={handleClick}
         >
-          <span>Labels</span>
-          <SettingsIcon />
+          <span>{store?.name}</span>
+          <KeyboardArrowDownIcon />
         </ButtonBase>
-        {value.map((label) => (
-          <div
-            key={label.name}
-            className={classes.tag}
-            style={{
-              backgroundColor: label.color,
-              color: theme.palette.getContrastText(label.color),
-            }}
-          >
-            {label.name}
-          </div>
-        ))}
       </div>
       <Popper
         id={id}
@@ -188,158 +193,156 @@ export default function StorePicker() {
         placement="bottom-start"
         className={classes.popper}
       >
-        <div className={classes.header}>Apply labels to this pull request</div>
-        <Autocomplete
-          open
-          onClose={handleClose}
-          multiple
-          classes={{
-            paper: classes.paper,
-            option: classes.option,
-            popperDisablePortal: classes.popperDisablePortal,
-          }}
-          value={pendingValue}
-          onChange={(event, newValue) => {
-            setPendingValue(newValue);
-          }}
-          disableCloseOnSelect
-          disablePortal
-          renderTags={() => null}
-          noOptionsText="No labels"
-          renderOption={(option, { selected }) => (
-            <React.Fragment>
-              <DoneIcon
-                className={classes.iconSelected}
-                style={{ visibility: selected ? "visible" : "hidden" }}
-              />
-              <span
-                className={classes.color}
-                style={{ backgroundColor: option.color }}
-              />
-              <div className={classes.text}>
-                {option.name}
-                <br />
-                {option.description}
-              </div>
-              <CloseIcon
-                className={classes.close}
-                style={{ visibility: selected ? "visible" : "hidden" }}
-              />
-            </React.Fragment>
+        <div className={classes.header}>
+          {pickerMode === "business" ? (
+            <>
+              <IconButton
+                aria-label="back-to-store-selection"
+                onClick={handleStorePickerMode}
+              >
+                <KeyboardArrowLeftIcon />
+              </IconButton>
+              <span>Select business</span>
+            </>
+          ) : (
+            <>
+              <span>{business.name}</span>
+              <ButtonBase disableRipple onClick={handleBusinessPickerMode}>
+                Change
+              </ButtonBase>
+            </>
           )}
-          options={[...labels].sort((a, b) => {
-            // Display the selected labels first.
-            let ai = value.indexOf(a);
-            ai = ai === -1 ? value.length + labels.indexOf(a) : ai;
-            let bi = value.indexOf(b);
-            bi = bi === -1 ? value.length + labels.indexOf(b) : bi;
-            return ai - bi;
-          })}
-          getOptionLabel={(option) => option.name}
-          renderInput={(params) => (
-            <InputBase
-              ref={params.InputProps.ref}
-              inputProps={params.inputProps}
-              autoFocus
-              className={classes.inputBase}
-            />
-          )}
-        />
+        </div>
+        {pickerMode === "store" ? (
+          <Autocomplete
+            open
+            onClose={handleClose}
+            classes={{
+              paper: classes.paper,
+              option: classes.option,
+              popperDisablePortal: classes.popperDisablePortal,
+            }}
+            value={store}
+            onChange={(event, newValue) => {
+              setStore(newValue!);
+            }}
+            disablePortal
+            renderTags={() => null}
+            noOptionsText="No labels"
+            renderOption={(option, { selected }) => (
+              <React.Fragment>
+                <div className={classes.text}>{option.name}</div>
+              </React.Fragment>
+            )}
+            options={business.stores}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => (
+              <InputBase
+                ref={params.InputProps.ref}
+                inputProps={params.inputProps}
+                autoFocus
+                className={classes.inputBase}
+              />
+            )}
+          />
+        ) : (
+          <Autocomplete
+            open
+            onClose={handleClose}
+            classes={{
+              paper: classes.paper,
+              option: classes.option,
+              popperDisablePortal: classes.popperDisablePortal,
+            }}
+            value={business}
+            onChange={(event, newValue) => {
+              setBusiness(newValue!);
+              setStore(newValue?.stores[0]!);
+              setPickerMode("store");
+            }}
+            disablePortal
+            renderTags={() => null}
+            noOptionsText="No labels"
+            renderOption={(option, { selected }) => (
+              <React.Fragment>
+                <div className={classes.text}>{option.name}</div>
+              </React.Fragment>
+            )}
+            options={businesses}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => (
+              <InputBase
+                ref={params.InputProps.ref}
+                inputProps={params.inputProps}
+                autoFocus
+                className={classes.inputBase}
+              />
+            )}
+          />
+        )}
       </Popper>
     </React.Fragment>
   );
 }
 
-// From https://github.com/abdonrd/github-labels
-const labels = [
+const businesses: Business[] = [
   {
-    name: "good first issue",
-    color: "#7057ff",
-    description: "Good for newcomers",
+    name: "Bubble Tea Pte Ltd (SG4343434)",
+    stores: [
+      { name: "All Stores (The Coffee Company Estate)", type: "store" },
+      { name: "London Region", type: "store" },
+      { name: "Paddington", type: "store" },
+      { name: "Oxford Street", type: "store" },
+      { name: "Midlands Region", type: "store" },
+      { name: "Bullring", type: "store" },
+      { name: "Leicester", type: "store" },
+      { name: "Central belt warehouse", type: "warehouse" },
+      { name: "Main distribution centre", type: "warehouse" },
+    ],
   },
   {
-    name: "help wanted",
-    color: "#008672",
-    description: "Extra attention is needed",
+    name: "Cafe Nero Plc (GB78437434)",
+    stores: [
+      { name: "All Stores (Cafe Nero Plc (GB78437434))", type: "store" },
+      { name: "Everton Region", type: "store" },
+      { name: "Oxford Street", type: "store" },
+      { name: "Midlands Region", type: "store" },
+      { name: "London Region", type: "store" },
+      { name: "Central belt warehouse", type: "warehouse" },
+      { name: "Main distribution centre", type: "warehouse" },
+    ],
   },
   {
-    name: "priority: critical",
-    color: "#b60205",
-    description: "",
+    name: "Fatboys UK Ltd (GB7878344)",
+    stores: [
+      { name: "All Stores (Fatboys UK Ltd (GB7878344))", type: "store" },
+      { name: "London Region", type: "store" },
+      { name: "US Street", type: "store" },
+      { name: "Midlands Region", type: "store" },
+      { name: "Manchester", type: "store" },
+      { name: "Main distribution centre", type: "warehouse" },
+    ],
   },
   {
-    name: "priority: high",
-    color: "#d93f0b",
-    description: "",
+    name: "Londis London Ltd (GB483943444)",
+    stores: [
+      { name: "All Stores (Londis London Ltd (GB483943444))", type: "store" },
+      { name: "London Region", type: "store" },
+      { name: "US Street", type: "store" },
+      { name: "Midlands Region", type: "store" },
+      { name: "Manchester", type: "store" },
+      { name: "Main distribution centre", type: "warehouse" },
+    ],
   },
   {
-    name: "priority: low",
-    color: "#0e8a16",
-    description: "",
-  },
-  {
-    name: "priority: medium",
-    color: "#fbca04",
-    description: "",
-  },
-  {
-    name: "status: can't reproduce",
-    color: "#fec1c1",
-    description: "",
-  },
-  {
-    name: "status: confirmed",
-    color: "#215cea",
-    description: "",
-  },
-  {
-    name: "status: duplicate",
-    color: "#cfd3d7",
-    description: "This issue or pull request already exists",
-  },
-  {
-    name: "status: needs information",
-    color: "#fef2c0",
-    description: "",
-  },
-  {
-    name: "status: wont do/fix",
-    color: "#eeeeee",
-    description: "This will not be worked on",
-  },
-  {
-    name: "type: bug",
-    color: "#d73a4a",
-    description: "Something isn't working",
-  },
-  {
-    name: "type: discussion",
-    color: "#d4c5f9",
-    description: "",
-  },
-  {
-    name: "type: documentation",
-    color: "#006b75",
-    description: "",
-  },
-  {
-    name: "type: enhancement",
-    color: "#84b6eb",
-    description: "",
-  },
-  {
-    name: "type: epic",
-    color: "#3e4b9e",
-    description: "A theme of work that contain sub-tasks",
-  },
-  {
-    name: "type: feature request",
-    color: "#fbca04",
-    description: "New feature or request",
-  },
-  {
-    name: "type: question",
-    color: "#d876e3",
-    description: "Further information is requested",
+    name: "The Coffee Company (GB4039843)",
+    stores: [
+      { name: "All Stores (The Coffee Company (GB4039843))", type: "store" },
+      { name: "London Region", type: "store" },
+      { name: "US Street", type: "store" },
+      { name: "Midlands Region", type: "store" },
+      { name: "Manchester", type: "store" },
+      { name: "Main distribution centre", type: "warehouse" },
+    ],
   },
 ];
