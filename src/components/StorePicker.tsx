@@ -10,6 +10,7 @@ import Autocomplete, {
   AutocompleteCloseReason,
 } from "@material-ui/lab/Autocomplete";
 import {
+  Box,
   Button,
   ClickAwayListener,
   IconButton,
@@ -139,28 +140,40 @@ const StorePicker: FC<{ businesses: Business[] }> = ({ businesses }) => {
     setPickerMode("store");
   };
 
+  const handleStoreChange = (
+    event: React.ChangeEvent<{}>,
+    value: Store | null
+  ) => {
+    setStore(value);
+    setAnchorEl(null);
+  };
+
+  const handleBusinessChange = (
+    event: React.ChangeEvent<{}>,
+    value: Business | null
+  ) => {
+    setBusiness(value!);
+    setStore(value?.stores[0]!);
+    setPickerMode("store");
+  };
+
   const open = Boolean(anchorEl);
   const id = open ? "store-picker" : undefined;
 
   return (
     <>
-      {/* <ClickAwayListener onClickAway={() => setAnchorEl(null)}> */}
-      <ClickAwayListener onClickAway={() => {}}>
-        <Button
-          disableRipple
-          aria-describedby={id}
-          onClick={togglePicker}
-          className={classes.pickerButton}
-          endIcon={
-            anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />
-          }
-          classes={{
-            label: classes.pickerButtonLabel,
-          }}
-        >
-          {store?.name}
-        </Button>
-      </ClickAwayListener>
+      <Button
+        disableRipple
+        aria-describedby={id}
+        onClick={togglePicker}
+        className={classes.pickerButton}
+        endIcon={anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+        classes={{
+          label: classes.pickerButtonLabel,
+        }}
+      >
+        {store?.name}
+      </Button>
       <Popper
         id={id}
         open={open}
@@ -168,133 +181,137 @@ const StorePicker: FC<{ businesses: Business[] }> = ({ businesses }) => {
         placement="bottom-start"
         className={classes.popper}
       >
-        <div className={classes.header}>
-          {pickerMode === "business" ? (
-            <>
-              <IconButton
-                aria-label="back-to-store-selection"
-                onClick={handleStorePickerMode}
-                size="small"
-              >
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography
-                variant="body2"
-                style={{
-                  fontWeight: 600,
-                  margin: "auto",
-                  transform: "translateX(-15px)",
+        <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
+          <Box>
+            <Box className={classes.header}>
+              {pickerMode === "business" ? (
+                <>
+                  <IconButton
+                    aria-label="back-to-store-selection"
+                    onClick={handleStorePickerMode}
+                    size="small"
+                  >
+                    <ArrowBackIcon />
+                  </IconButton>
+                  <Typography
+                    variant="body2"
+                    style={{
+                      fontWeight: 600,
+                      margin: "auto",
+                      transform: "translateX(-15px)",
+                    }}
+                  >
+                    Select business
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant="body2" style={{ fontWeight: 600 }}>
+                    {business.name}
+                  </Typography>
+                  <Button
+                    size="small"
+                    color="primary"
+                    disableRipple
+                    onClick={handleBusinessPickerMode}
+                    style={{ textTransform: "none", fontWeight: 600 }}
+                  >
+                    Change
+                  </Button>
+                </>
+              )}
+            </Box>
+            {pickerMode === "store" ? (
+              <Autocomplete
+                open
+                onClose={handleClose}
+                classes={{
+                  paper: classes.paper,
+                  option: classes.option,
+                  popperDisablePortal: classes.popperDisablePortal,
+                  groupLabel: classes.groupLabel,
                 }}
-              >
-                Select business
-              </Typography>
-            </>
-          ) : (
-            <>
-              <Typography variant="body2" style={{ fontWeight: 600 }}>
-                {business.name}
-              </Typography>
-              <Button
-                size="small"
-                color="primary"
-                disableRipple
-                onClick={handleBusinessPickerMode}
-                style={{ textTransform: "none", fontWeight: 600 }}
-              >
-                Change
-              </Button>
-            </>
-          )}
-        </div>
-        {pickerMode === "store" ? (
-          <Autocomplete
-            open
-            onClose={handleClose}
-            classes={{
-              paper: classes.paper,
-              option: classes.option,
-              popperDisablePortal: classes.popperDisablePortal,
-              groupLabel: classes.groupLabel,
-            }}
-            value={store}
-            onChange={(event, newValue) => {
-              setStore(newValue!);
-            }}
-            disablePortal
-            renderTags={() => null}
-            noOptionsText="No labels"
-            renderOption={(option, { selected }) => (
-              <React.Fragment>
-                <div className={classes.text}>
-                  <LocationOnIcon fontSize="small" style={{ marginRight: 4 }} />
-                  {option.name}
-                </div>
-              </React.Fragment>
-            )}
-            options={business.stores}
-            groupBy={(option) => option.type}
-            getOptionLabel={(option) => option.name}
-            renderInput={(params) => (
-              <TextField
-                ref={params.InputProps.ref}
-                inputProps={params.inputProps}
-                autoFocus
-                InputProps={{
-                  className: classes.searchInput,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" color="disabled" />
-                    </InputAdornment>
-                  ),
+                value={store}
+                onChange={handleStoreChange}
+                disablePortal
+                renderTags={() => null}
+                noOptionsText="No labels"
+                renderOption={(option, { selected }) => (
+                  <React.Fragment>
+                    <Box className={classes.text}>
+                      <LocationOnIcon
+                        fontSize="small"
+                        style={{ marginRight: 4 }}
+                      />
+                      {option.name}
+                    </Box>
+                  </React.Fragment>
+                )}
+                options={business.stores}
+                groupBy={(option) => option.type}
+                getOptionLabel={(option) => option.name}
+                renderInput={(params) => (
+                  <TextField
+                    ref={params.InputProps.ref}
+                    inputProps={params.inputProps}
+                    autoFocus
+                    InputProps={{
+                      className: classes.searchInput,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon fontSize="small" color="disabled" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    className={classes.searchInputWrapper}
+                  />
+                )}
+              />
+            ) : (
+              <Autocomplete
+                open
+                onClose={handleClose}
+                classes={{
+                  paper: classes.paper,
+                  option: classes.option,
+                  popperDisablePortal: classes.popperDisablePortal,
                 }}
-                className={classes.searchInputWrapper}
+                value={business}
+                onChange={handleBusinessChange}
+                disablePortal
+                renderTags={() => null}
+                noOptionsText="No labels"
+                renderOption={(option, { selected }) => (
+                  <Box className={classes.text}>
+                    <LocationOnIcon
+                      fontSize="small"
+                      style={{ marginRight: 4 }}
+                    />
+                    {option.name}
+                  </Box>
+                )}
+                options={businesses}
+                getOptionLabel={(option) => option.name}
+                renderInput={(params) => (
+                  <TextField
+                    ref={params.InputProps.ref}
+                    inputProps={params.inputProps}
+                    autoFocus
+                    InputProps={{
+                      className: classes.searchInput,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon fontSize="small" color="disabled" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    className={classes.searchInputWrapper}
+                  />
+                )}
               />
             )}
-          />
-        ) : (
-          <Autocomplete
-            open
-            onClose={handleClose}
-            classes={{
-              paper: classes.paper,
-              option: classes.option,
-              popperDisablePortal: classes.popperDisablePortal,
-            }}
-            value={business}
-            onChange={(event, newValue) => {
-              setBusiness(newValue!);
-              setStore(newValue?.stores[0]!);
-              setPickerMode("store");
-            }}
-            disablePortal
-            renderTags={() => null}
-            noOptionsText="No labels"
-            renderOption={(option, { selected }) => (
-              <div className={classes.text}>
-                <LocationOnIcon fontSize="small" style={{ marginRight: 4 }} />
-                {option.name}
-              </div>
-            )}
-            options={businesses}
-            getOptionLabel={(option) => option.name}
-            renderInput={(params) => (
-              <TextField
-                ref={params.InputProps.ref}
-                inputProps={params.inputProps}
-                autoFocus
-                InputProps={{
-                  className: classes.searchInput,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" color="disabled" />
-                    </InputAdornment>
-                  ),
-                }}
-                className={classes.searchInputWrapper}
-              />
-            )}
-          />
-        )}
+          </Box>
+        </ClickAwayListener>
       </Popper>
     </>
   );
