@@ -3,7 +3,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import Popper from "@material-ui/core/Popper";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
-import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import LocationOnIcon from "@material-ui/icons/LocationOn";
 import SearchIcon from "@material-ui/icons/Search";
 import Autocomplete, {
   AutocompleteCloseReason,
@@ -19,11 +20,17 @@ import {
 
 const useStyles = makeStyles((theme) => ({
   pickerButton: {
+    minWidth: theme.spacing(40),
     borderRadius: "unset",
     textTransform: "none",
     "&:focus": {
       borderBottom: `1px solid ${theme.palette.primary.main}`,
     },
+  },
+  pickerButtonLabel: {
+    display: "flex",
+    justifyContent: "space-between",
+    textAlign: "left",
   },
   popper: {
     border: "1px solid rgba(27,31,35,.15)",
@@ -88,6 +95,8 @@ const useStyles = makeStyles((theme) => ({
   },
   text: {
     flexGrow: 1,
+    alignItems: "center",
+    display: "flex",
   },
 }));
 
@@ -155,6 +164,9 @@ export default function StorePicker() {
           endIcon={
             anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />
           }
+          classes={{
+            label: classes.pickerButtonLabel,
+          }}
         >
           {store?.name}
         </Button>
@@ -172,10 +184,18 @@ export default function StorePicker() {
               <IconButton
                 aria-label="back-to-store-selection"
                 onClick={handleStorePickerMode}
+                size="small"
               >
-                <KeyboardArrowLeftIcon />
+                <ArrowBackIcon />
               </IconButton>
-              <Typography variant="body2" style={{ fontWeight: 600 }}>
+              <Typography
+                variant="body2"
+                style={{
+                  fontWeight: 600,
+                  margin: "auto",
+                  transform: "translateX(-15px)",
+                }}
+              >
                 Select business
               </Typography>
             </>
@@ -215,7 +235,10 @@ export default function StorePicker() {
             noOptionsText="No labels"
             renderOption={(option, { selected }) => (
               <React.Fragment>
-                <div className={classes.text}>{option.name}</div>
+                <div className={classes.text}>
+                  <LocationOnIcon fontSize="small" style={{ marginRight: 4 }} />
+                  {option.name}
+                </div>
               </React.Fragment>
             )}
             options={business.stores}
@@ -257,9 +280,10 @@ export default function StorePicker() {
             renderTags={() => null}
             noOptionsText="No labels"
             renderOption={(option, { selected }) => (
-              <React.Fragment>
-                <div className={classes.text}>{option.name}</div>
-              </React.Fragment>
+              <div className={classes.text}>
+                <LocationOnIcon fontSize="small" style={{ marginRight: 4 }} />
+                {option.name}
+              </div>
             )}
             options={businesses}
             getOptionLabel={(option) => option.name}
