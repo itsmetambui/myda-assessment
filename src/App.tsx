@@ -1,4 +1,4 @@
-import { Button, ThemeProvider } from "@material-ui/core";
+import { ThemeProvider } from "@material-ui/core";
 import "./App.css";
 import StorePicker from "./components/StorePicker";
 import theme from "./theme";
@@ -8,7 +8,6 @@ function App() {
     <ThemeProvider theme={theme}>
       <div className="App">
         <header className="App-header">
-          <Button>Test</Button>
           <StorePicker businesses={businesses} />
         </header>
       </div>
