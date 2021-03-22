@@ -5,8 +5,10 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Improvements
 
 - Props & data structure design to support nested stores.
+- Asynchronous support props.
 - Support for virtualization.
 - Pixel perfect design with material ui theme config.
+- Smooth transition when navigating between store and business picker.
 
 ## Available Scripts
 
