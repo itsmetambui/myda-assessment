@@ -2,6 +2,12 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Improvements
+
+- Props & data structure design to support nested stores.
+- Support for virtualization.
+- Pixel perfect design with material ui theme config.
+
 ## Available Scripts
 
 In the project directory, you can run:
