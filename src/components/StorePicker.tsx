@@ -55,7 +55,14 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     color: "#586069",
     fontSize: 13,
-    paddingTop: theme.spacing(2),
+    paddingTop: theme.spacing(0.5),
+  },
+  groupLabel: {
+    textTransform: "lowercase",
+    fontWeight: 600,
+    "&::first-letter": {
+      textTransform: "uppercase",
+    },
   },
   option: {
     minHeight: "auto",
@@ -197,6 +204,7 @@ export default function StorePicker() {
               paper: classes.paper,
               option: classes.option,
               popperDisablePortal: classes.popperDisablePortal,
+              groupLabel: classes.groupLabel,
             }}
             value={store}
             onChange={(event, newValue) => {
@@ -211,6 +219,7 @@ export default function StorePicker() {
               </React.Fragment>
             )}
             options={business.stores}
+            groupBy={(option) => option.type}
             getOptionLabel={(option) => option.name}
             renderInput={(params) => (
               <TextField
