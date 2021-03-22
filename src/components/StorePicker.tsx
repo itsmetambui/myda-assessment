@@ -1,87 +1,61 @@
 import React from "react";
-import { fade, makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import Popper from "@material-ui/core/Popper";
+import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
+import SearchIcon from "@material-ui/icons/Search";
 import Autocomplete, {
   AutocompleteCloseReason,
 } from "@material-ui/lab/Autocomplete";
-import ButtonBase from "@material-ui/core/ButtonBase";
-import InputBase from "@material-ui/core/InputBase";
-import { IconButton } from "@material-ui/core";
+import {
+  Button,
+  ClickAwayListener,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    width: 400,
-    fontSize: 13,
-  },
-  button: {
-    fontSize: 13,
-    width: "100%",
-    textAlign: "left",
-    paddingBottom: 8,
-    color: "#586069",
-    fontWeight: 600,
-    "&:hover,&:focus": {
-      color: "#0366d6",
+  pickerButton: {
+    borderRadius: "unset",
+    textTransform: "none",
+    "&:focus": {
+      borderBottom: `1px solid ${theme.palette.primary.main}`,
     },
-    "& span": {
-      width: "100%",
-    },
-    "& svg": {
-      width: 16,
-      height: 16,
-    },
-    borderBottom: 1,
-  },
-  tag: {
-    marginTop: 3,
-    height: 20,
-    padding: ".15em 4px",
-    fontWeight: 600,
-    lineHeight: "15px",
-    borderRadius: 2,
   },
   popper: {
     border: "1px solid rgba(27,31,35,.15)",
-    boxShadow: "0 3px 12px rgba(27,31,35,.15)",
-    borderRadius: 3,
+    boxShadow: theme.shadows[5],
+    borderRadius: theme.shape.borderRadius,
     width: 300,
     zIndex: 1,
-    fontSize: 13,
-    color: "#586069",
-    backgroundColor: "#f6f8fa",
+    backgroundColor: "white",
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(0.5),
   },
   header: {
-    borderBottom: "1px solid #e1e4e8",
-    padding: "8px 10px",
+    padding: `${theme.spacing(3)}px ${theme.spacing(2)}px`,
     fontWeight: 600,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: "#F5F6F7",
   },
-  inputBase: {
-    padding: 10,
+  searchInputWrapper: {
     width: "100%",
-    borderBottom: "1px solid #dfe2e5",
-    "& input": {
-      borderRadius: 4,
-      backgroundColor: theme.palette.common.white,
-      padding: 8,
-      transition: theme.transitions.create(["border-color", "box-shadow"]),
-      border: "1px solid #ced4da",
-      fontSize: 14,
-      "&:focus": {
-        boxShadow: `${fade(theme.palette.primary.main, 0.25)} 0 0 0 0.2rem`,
-        borderColor: theme.palette.primary.main,
-      },
-    },
+  },
+  searchInput: {
+    padding: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+    fontSize: 13,
   },
   paper: {
     boxShadow: "none",
     margin: 0,
     color: "#586069",
     fontSize: 13,
+    paddingTop: theme.spacing(2),
   },
   option: {
     minHeight: "auto",
@@ -97,12 +71,6 @@ const useStyles = makeStyles((theme) => ({
   popperDisablePortal: {
     position: "relative",
   },
-  iconSelected: {
-    width: 17,
-    height: 17,
-    marginRight: 5,
-    marginLeft: -2,
-  },
   color: {
     width: 14,
     height: 14,
@@ -113,11 +81,6 @@ const useStyles = makeStyles((theme) => ({
   },
   text: {
     flexGrow: 1,
-  },
-  close: {
-    opacity: 0.6,
-    width: 18,
-    height: 18,
   },
 }));
 
@@ -144,10 +107,10 @@ export default function StorePicker() {
   const [business, setBusiness] = React.useState<Business>(businesses[0]);
   const [store, setStore] = React.useState<Store | null>(business.stores[0]);
 
-  const handleClick = (
+  const togglePicker = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    setAnchorEl(event.currentTarget);
+    setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
   const handleClose = (
@@ -174,18 +137,21 @@ export default function StorePicker() {
   const id = open ? "store-picker" : undefined;
 
   return (
-    <React.Fragment>
-      <div className={classes.root}>
-        <ButtonBase
+    <>
+      {/* <ClickAwayListener onClickAway={() => setAnchorEl(null)}> */}
+      <ClickAwayListener onClickAway={() => {}}>
+        <Button
           disableRipple
-          className={classes.button}
           aria-describedby={id}
-          onClick={handleClick}
+          onClick={togglePicker}
+          className={classes.pickerButton}
+          endIcon={
+            anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />
+          }
         >
-          <span>{store?.name}</span>
-          <KeyboardArrowDownIcon />
-        </ButtonBase>
-      </div>
+          {store?.name}
+        </Button>
+      </ClickAwayListener>
       <Popper
         id={id}
         open={open}
@@ -202,14 +168,24 @@ export default function StorePicker() {
               >
                 <KeyboardArrowLeftIcon />
               </IconButton>
-              <span>Select business</span>
+              <Typography variant="body2" style={{ fontWeight: 600 }}>
+                Select business
+              </Typography>
             </>
           ) : (
             <>
-              <span>{business.name}</span>
-              <ButtonBase disableRipple onClick={handleBusinessPickerMode}>
+              <Typography variant="body2" style={{ fontWeight: 600 }}>
+                {business.name}
+              </Typography>
+              <Button
+                size="small"
+                color="primary"
+                disableRipple
+                onClick={handleBusinessPickerMode}
+                style={{ textTransform: "none", fontWeight: 600 }}
+              >
                 Change
-              </ButtonBase>
+              </Button>
             </>
           )}
         </div>
@@ -237,11 +213,19 @@ export default function StorePicker() {
             options={business.stores}
             getOptionLabel={(option) => option.name}
             renderInput={(params) => (
-              <InputBase
+              <TextField
                 ref={params.InputProps.ref}
                 inputProps={params.inputProps}
                 autoFocus
-                className={classes.inputBase}
+                InputProps={{
+                  className: classes.searchInput,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" color="disabled" />
+                    </InputAdornment>
+                  ),
+                }}
+                className={classes.searchInputWrapper}
               />
             )}
           />
@@ -271,23 +255,31 @@ export default function StorePicker() {
             options={businesses}
             getOptionLabel={(option) => option.name}
             renderInput={(params) => (
-              <InputBase
+              <TextField
                 ref={params.InputProps.ref}
                 inputProps={params.inputProps}
                 autoFocus
-                className={classes.inputBase}
+                InputProps={{
+                  className: classes.searchInput,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" color="disabled" />
+                    </InputAdornment>
+                  ),
+                }}
+                className={classes.searchInputWrapper}
               />
             )}
           />
         )}
       </Popper>
-    </React.Fragment>
+    </>
   );
 }
 
 const businesses: Business[] = [
   {
-    name: "Bubble Tea Pte Ltd (SG4343434)",
+    name: "Bubble Tea Pte Ltd",
     stores: [
       { name: "All Stores (The Coffee Company Estate)", type: "store" },
       { name: "London Region", type: "store" },
@@ -301,7 +293,7 @@ const businesses: Business[] = [
     ],
   },
   {
-    name: "Cafe Nero Plc (GB78437434)",
+    name: "Cafe Nero Plc",
     stores: [
       { name: "All Stores (Cafe Nero Plc (GB78437434))", type: "store" },
       { name: "Everton Region", type: "store" },
@@ -324,7 +316,7 @@ const businesses: Business[] = [
     ],
   },
   {
-    name: "Londis London Ltd (GB483943444)",
+    name: "Londis London Ltd",
     stores: [
       { name: "All Stores (Londis London Ltd (GB483943444))", type: "store" },
       { name: "London Region", type: "store" },
@@ -335,7 +327,7 @@ const businesses: Business[] = [
     ],
   },
   {
-    name: "The Coffee Company (GB4039843)",
+    name: "The Coffee Company",
     stores: [
       { name: "All Stores (The Coffee Company (GB4039843))", type: "store" },
       { name: "London Region", type: "store" },
